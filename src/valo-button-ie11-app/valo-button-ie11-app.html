@@ -1,0 +1,96 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/polymer/lib/utils/render-status.html">
+<link rel="import" href="../../bower_components/vaadin-valo-theme/vaadin-button.html">
+<link rel="import" href="../../bower_components/vaadin-button/vaadin-button.html">
+
+<dom-module id="valo-button-ie11-app">
+  <template>
+    <style>
+       :host {
+        display: block;
+      }
+
+      .table {
+        display: table;
+      }
+
+      .tr {
+        display: table-row;
+      }
+
+      .td {
+        display: table-cell;
+        padding-right: 1em;
+      }
+    </style>
+    <h2>Vaadin Button sizing</h2>
+    <vaadin-button id="button">Click Me!</vaadin-button>
+    <p>
+      The size of the button above is [[dimensions]].
+    </p>
+    <p>
+      Custom Properties of the button above:
+      <div class="table">
+        <template is="dom-repeat" items="[[sizeProperties]]">
+          <div class="tr">
+            <div class="td">[[item.name]]</div>
+            <div class="td">[[item.value]]</div>
+          </div>
+        </template>
+      </div>
+    </p>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class ValoButtonIe11App extends Polymer.Element {
+      static get is() {
+        return 'valo-button-ie11-app';
+      }
+      static get properties() {
+        return {
+          dimensions: {
+            type: String,
+            value: 'unknown'
+          },
+          sizeProperties: {
+            type: Array,
+            value: () => []
+          }
+        };
+      }
+
+      ready() {
+        super.ready();
+        Polymer.RenderStatus.afterNextRender(this.$.button, () => {
+          const rect = this.$.button.getBoundingClientRect();
+          this.dimensions = `${Math.round(rect.width)}x${Math.round(rect.height)}px (width x height)`;
+
+          const properties = ['min-height', '--valo-size', '--valo-size-s', '--valo-size-m', '--valo-size-l',
+            '--valo-size-xl'
+          ];
+          const sizeProperties = new Array(properties.length);
+          for (var i = 0; i < properties.length; i += 1) {
+            let value = 'undefined';
+            if (typeof window.ShadyCSS !== 'undefined') {
+              value = window.ShadyCSS.getComputedStyleValue(this.$.button, properties[i]);
+            } else {
+              value = window.getComputedStyle(this.$.button).getPropertyValue(properties[i]);
+            }
+            sizeProperties.push({
+              name: properties[i],
+              value: value
+            });
+          }
+          this.sizeProperties = sizeProperties;
+        });
+      }
+    }
+
+    window.customElements.define(ValoButtonIe11App.is, ValoButtonIe11App);
+  </script>
+</dom-module>
